@@ -1,31 +1,24 @@
 package com.familypassword.service.impl;
 
-import com.familypassword.dto.GroupDto;
 import com.familypassword.dto.PasswordDto;
 import com.familypassword.dto.SecretDto;
 import com.familypassword.dto.UserDto;
 import com.familypassword.exception.ModelProblemException;
-import com.familypassword.mapper.GroupMapper;
 import com.familypassword.mapper.SecretMapper;
 import com.familypassword.mapper.UserMapper;
-import com.familypassword.models.Folder;
-import com.familypassword.models.Group;
-import com.familypassword.models.Password;
-import com.familypassword.models.Secret;
-import com.familypassword.models.User;
+import com.familypassword.models.*;
 import com.familypassword.repository.GroupRepository;
 import com.familypassword.repository.SecretRepository;
 import com.familypassword.repository.UserRepository;
 import com.familypassword.service.UserService;
 import com.familypassword.utils.TokenGenerator;
+import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
-import org.springframework.stereotype.Service;
 
 @Service
 public class DefaultUserService implements UserService {
@@ -54,7 +47,7 @@ public class DefaultUserService implements UserService {
     }
 
     @Override
-    public GroupDto createGroup(Long id, String groupName) {
+    public Group createGroup(Long id, String groupName) {
         Optional<User> optionalUser = userRepository.findById(id);
 
         if (optionalUser.isEmpty()) {
@@ -65,8 +58,19 @@ public class DefaultUserService implements UserService {
         Group group = new Group();
         group.setName(groupName);
         group.setAdmin(admin);
+        group.setMembers(List.of(admin));
+        group.setSecrets(Collections.emptyList());
 
-        return GroupMapper.defaultPopulating(groupRepository.save(group));
+        return groupRepository.save(group);
+    }
+
+    public List<Group> getAllGroup(String officialUserName) {
+        List<String> groups = groupRepository.findAllGroups(officialUserName);
+
+        return groups.stream().map(groupRepository::findById)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -106,25 +110,9 @@ public class DefaultUserService implements UserService {
 
         User user = optionalUser.get();
         return user.getSecrets().stream()
-                   .map(SecretMapper::defaultPopulating)
-                   .collect(Collectors.toList());
+                .map(SecretMapper::defaultPopulating)
+                .collect(Collectors.toList());
     }
-
-    //    private Secret searchForSecret(List<Secret> secrets, Long id) {
-    //        if (secrets == null || secrets.isEmpty()) {
-    //            return null;
-    //        }
-    //
-    //        for (var secret : secrets) {
-    //            if (secret.getId().equals(id)) {
-    //                return secret;
-    //            } else if (secret instanceof Folder) {
-    //                return searchForSecret(new ArrayList<>(((Folder) secret).getChildren()), id);
-    //            }
-    //        }
-    //
-    //        return null;
-    //    }
 
     @Override
     public SecretDto updateSecret(Long id, SecretDto secretDto) {
@@ -162,5 +150,14 @@ public class DefaultUserService implements UserService {
         }
 
         return UserMapper.defaultPopulating(byNameAndToken.get());
+    }
+
+    @Override
+    public void saveImageUrl(Long id, String imgUrl) {
+        Optional<User> user = userRepository.findById(id);
+        user.ifPresent(value -> {
+            value.setImageUrl(imgUrl);
+            userRepository.save(value);
+        });
     }
 }

@@ -1,7 +1,7 @@
 package com.familypassword.mapper;
 
-import com.familypassword.models.User;
 import com.familypassword.dto.UserDto;
+import com.familypassword.models.User;
 
 public class UserMapper {
 
@@ -12,6 +12,7 @@ public class UserMapper {
         userDto.setName(user.getName());
         userDto.setToken(user.getToken());
         userDto.setEmail(user.getEmail());
+        userDto.setImageUrl(user.getImageUrl() == null ? "img/placeholder.png" : user.getImageUrl());
 
         return userDto;
     }

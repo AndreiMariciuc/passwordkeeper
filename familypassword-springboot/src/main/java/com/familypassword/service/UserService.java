@@ -1,8 +1,8 @@
 package com.familypassword.service;
 
-import com.familypassword.dto.GroupDto;
 import com.familypassword.dto.SecretDto;
 import com.familypassword.dto.UserDto;
+import com.familypassword.models.Group;
 
 import java.util.List;
 
@@ -10,7 +10,7 @@ public interface UserService {
 
     UserDto register(String name, String email);
 
-    GroupDto createGroup(Long id, String groupName);
+    Group createGroup(Long id, String groupName);
 
     SecretDto addSecret(Long id, Long parentId, SecretDto secretDto);
 
@@ -21,4 +21,8 @@ public interface UserService {
     void deleteSecret(Long id, Long secretId);
 
     UserDto isRegister(String username, String token);
+
+    List<Group> getAllGroup(String officialUserName);
+
+    void saveImageUrl(Long id, String imgUrl);
 }

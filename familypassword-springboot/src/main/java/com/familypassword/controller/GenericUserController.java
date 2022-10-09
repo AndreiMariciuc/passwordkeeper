@@ -1,27 +1,22 @@
 package com.familypassword.controller;
 
 import com.familypassword.dto.FolderDto;
-import com.familypassword.dto.GroupDto;
 import com.familypassword.dto.PasswordDto;
 import com.familypassword.dto.SecretDto;
 import com.familypassword.dto.UserDto;
+import com.familypassword.models.Group;
 import com.familypassword.service.UserService;
+import com.familypassword.utils.ImageUtil;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
 
 @RestController
 @Slf4j
@@ -44,7 +39,7 @@ public class GenericUserController {
     }
 
     @PostMapping("/{userId}/create-group")
-    public GroupDto createGroup(@PathVariable Long userId, @RequestParam String groupName) {
+    public Group createGroup(@PathVariable Long userId, @RequestParam String groupName) {
         return userService.createGroup(userId, groupName);
     }
 
@@ -76,12 +71,26 @@ public class GenericUserController {
     @PutMapping("/{id}/update-folder")
     public FolderDto updateFolder(@PathVariable Long id, @RequestBody FolderDto folderDto) {
         return (FolderDto) userService.updateSecret(id, folderDto);
-
     }
 
     @DeleteMapping("{id}/delete-secret/{secretId}")
     public ResponseEntity<?> deleteSecret(@PathVariable Long id, @PathVariable Long secretId) {
         userService.deleteSecret(id, secretId);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{id}/groups")
+    public List<Group> getGroups(@PathVariable Long id, @RequestParam String name) {
+        return userService.getAllGroup(name + "[" + id + "]");
+    }
+
+    @Value("${local.system.imgs.dir}")
+    private String localFileSystemImagesDir;
+
+    @PostMapping(value = "/{id}/upload-image", consumes = "multipart/form-data")
+    public String saveUploadedImage(@PathVariable Long id, @RequestParam("image") MultipartFile image) throws IOException {
+        Optional<String> upload = ImageUtil.upload(image, localFileSystemImagesDir);
+        upload.ifPresent(v -> userService.saveImageUrl(id, v));
+        return upload.orElse(null);
     }
 }

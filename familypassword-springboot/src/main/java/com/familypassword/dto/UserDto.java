@@ -10,4 +10,5 @@ public class UserDto {
     private String name;
     private String token;
     private String email;
+    private String imageUrl;
 }

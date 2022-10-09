@@ -1,13 +1,12 @@
 package com.familypassword.models;
 
 import lombok.Data;
-
-import java.util.List;
-
 import org.springframework.data.neo4j.core.schema.GeneratedValue;
 import org.springframework.data.neo4j.core.schema.Id;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
+
+import java.util.List;
 
 @Node
 @Data
@@ -22,9 +21,10 @@ public class User {
     private String token;
     private String email;
     private String officialName;
+    private String imageUrl = "img/placeholder";
 
     @Relationship(type = "PART_OF")
-    private List<Group> family;
+    private List<Group> groups;
 
     @Relationship(type = "HAS_PERMISSION", direction = Relationship.Direction.OUTGOING)
     private List<Secret> secrets;

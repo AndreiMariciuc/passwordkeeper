@@ -28,4 +28,7 @@ public class Group {
 
     @Relationship(type = "KEEP_SECRETS", direction = Relationship.Direction.OUTGOING)
     private List<Secret> secrets;
+
+    @Relationship(type = "REQUEST", direction = Relationship.Direction.INCOMING)
+    private List<User> requests;
 }
